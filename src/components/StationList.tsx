@@ -1,15 +1,24 @@
 import LoadingState from './LoadingState'
 import { useStations } from '../hooks/useStations'
+import type { Station } from '../types/station'
 
-const StationList = () => {
-    const {
-        filteredStations,
-        loading,
-        error,
-        selectedStationId,
-        setSelectedStation,
-    } = useStations()
+type StationListProps = {
+    stations: Station[]
+    loading: boolean
+    error: string | null
+    selectedStationId: number | null
+    onSelect: (id: number) => void
+    cityFilter: string
+}
 
+export const StationList = ({
+    stations,
+    loading,
+    error,
+    selectedStationId,
+    onSelect,
+    cityFilter,
+}: StationListProps) => {
     if (loading) {
         return (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
@@ -27,10 +36,11 @@ const StationList = () => {
         )
     }
 
-    if (filteredStations.length === 0) {
+    if (stations.length === 0) {
         return (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-slate-300">
-                {`No stations${cityFilter ? ' match this city.' : ' available.'}`} {cityFilter ? 'Clear the filter to see all stations again.' : ''}
+                {`No stations${cityFilter ? ' match this city.' : ' available.'}`}{' '}
+                {cityFilter ? 'Clear the filter to see all stations again.' : ''}
             </div>
         )
     }
@@ -43,20 +53,20 @@ const StationList = () => {
                         Stations
                     </p>
                     <p className="text-sm text-slate-300">
-                        Showing {filteredStations.length} result
-                        {filteredStations.length === 1 ? '' : 's'}
+                        Showing {stations.length} result
+                        {stations.length === 1 ? '' : 's'}
                     </p>
                 </div>
             </div>
             <ul className="divide-y divide-slate-800 overflow-y-auto h-[450px]">
-                {filteredStations.map((station) => {
+                {stations.map((station) => {
                     const isSelected = station.id === selectedStationId
 
                     return (
                         <li key={station.id} className="px-5 py-2">
                             <button
                                 type="button"
-                                onClick={() => setSelectedStation(station.id)}
+                                onClick={() => onSelect(station.id)}
                                 className={`w-full rounded-xl px-3 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
                                     isSelected
                                         ? 'border border-cyan-400/60 bg-slate-800/70 shadow-inner shadow-cyan-500/20'
@@ -88,4 +98,26 @@ const StationList = () => {
     )
 }
 
-export default StationList
+const StationListContainer = () => {
+    const {
+        filteredStations,
+        loading,
+        error,
+        selectedStationId,
+        setSelectedStation,
+        cityFilter,
+    } = useStations()
+
+    return (
+        <StationList
+            stations={filteredStations}
+            loading={loading}
+            error={error}
+            selectedStationId={selectedStationId}
+            onSelect={setSelectedStation}
+            cityFilter={cityFilter}
+        />
+    )
+}
+
+export default StationListContainer

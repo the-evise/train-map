@@ -1,12 +1,23 @@
-import type {ChangeEvent} from 'react'
+import type { ChangeEvent } from 'react'
 import { useStations } from '../hooks/useStations'
 
-const CityFilter = () => {
-    const { cities, cityFilter, setCityFilter, clearFilter, loading } =
-        useStations()
+type CityFilterProps = {
+    cities: string[]
+    cityFilter: string
+    loading: boolean
+    onChange: (city: string) => void
+    onClear: () => void
+}
 
+export const CityFilter = ({
+    cities,
+    cityFilter,
+    loading,
+    onChange,
+    onClear,
+}: CityFilterProps) => {
     const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
-        setCityFilter(event.target.value)
+        onChange(event.target.value)
     }
 
     return (
@@ -35,7 +46,7 @@ const CityFilter = () => {
             </div>
             <button
                 type="button"
-                onClick={clearFilter}
+                onClick={onClear}
                 disabled={!cityFilter}
                 className="rounded-lg border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-cyan-400 hover:text-cyan-100 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -45,4 +56,19 @@ const CityFilter = () => {
     )
 }
 
-export default CityFilter
+const CityFilterContainer = () => {
+    const { cities, cityFilter, setCityFilter, clearFilter, loading } =
+        useStations()
+
+    return (
+        <CityFilter
+            cities={cities}
+            cityFilter={cityFilter}
+            loading={loading}
+            onChange={setCityFilter}
+            onClear={clearFilter}
+        />
+    )
+}
+
+export default CityFilterContainer
