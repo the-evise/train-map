@@ -37,7 +37,7 @@ const StationList = () => {
     }
 
     return (
-        <div className="h-full rounded-2xl border border-slate-800 bg-slate-900/60 shadow-lg shadow-cyan-500/5">
+        <div className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-800 bg-slate-900/60 shadow-lg shadow-cyan-500/5">
             <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
                 <div>
                     <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">
@@ -49,7 +49,7 @@ const StationList = () => {
                     </p>
                 </div>
             </div>
-            <ul className="divide-y divide-slate-800">
+            <ul className="divide-y divide-slate-800 overflow-y-auto h-[450px]">
                 {filteredStations.map((station) => {
                     const isSelected = station.id === selectedStationId
 
