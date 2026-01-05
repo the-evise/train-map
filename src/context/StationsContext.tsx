@@ -4,6 +4,7 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react'
 import { fetchStations } from '../api/stations'
@@ -37,30 +38,52 @@ export const StationsProvider = ({ children }: { children: ReactNode }) => {
     )
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
+    const activeRequestRef = useRef<{
+        id: number
+        controller: AbortController
+    } | null>(null)
+    const requestIdRef = useRef<number>(0)
 
     const loadStations = useCallback(
         async (controller?: AbortController) => {
             const abortController = controller ?? new AbortController()
+            const requestId = requestIdRef.current + 1
+            requestIdRef.current = requestId
+            activeRequestRef.current?.controller.abort()
+            activeRequestRef.current = { id: requestId, controller: abortController }
 
             setLoading(true)
             setError(null)
 
             try {
                 const data = await fetchStations(abortController.signal)
-                if (!abortController.signal.aborted) {
+                const isLatest =
+                    activeRequestRef.current?.id === requestId &&
+                    !abortController.signal.aborted
+
+                if (isLatest) {
                     setStations(data)
                 }
             } catch (err) {
                 if (abortController.signal.aborted) {
                     return
                 }
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : 'Failed to load stations.',
-                )
+                const isLatest = activeRequestRef.current?.id === requestId
+
+                if (isLatest) {
+                    setError(
+                        err instanceof Error
+                            ? err.message
+                            : 'Failed to load stations.',
+                    )
+                }
             } finally {
-                if (!abortController.signal.aborted) {
+                const isLatest =
+                    activeRequestRef.current?.id === requestId &&
+                    !abortController.signal.aborted
+
+                if (isLatest) {
+                    activeRequestRef.current = null
                     setLoading(false)
                 }
             }
