@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { MapContainer, TileLayer } from 'react-leaflet'
 import LoadingState from './LoadingState'
 import { useStations } from '../hooks/useStations'
@@ -19,22 +18,7 @@ const MapView = () => {
         setSelectedStation,
     } = useStations()
 
-    const mapCenter: [number, number] = useMemo(() => {
-        if (selectedStation) {
-            return [selectedStation.lat, selectedStation.lng]
-        }
-
-        if (filteredStations.length > 0) {
-            return [filteredStations[0].lat, filteredStations[0].lng]
-        }
-
-        if (stations.length > 0) {
-            return [stations[0].lat, stations[0].lng]
-        }
-
-        return GERMANY_CENTER
-    }, [filteredStations, selectedStation, stations])
-
+    const mapCenter: [number, number] = GERMANY_CENTER
     const zoomLevel = DEFAULT_ZOOM
     const showEmptyState = !loading && !error && filteredStations.length === 0
 
@@ -67,6 +51,8 @@ const MapView = () => {
                     selectedStation={selectedStation}
                     filteredStations={filteredStations}
                     allStations={stations}
+                    defaultCenter={GERMANY_CENTER}
+                    defaultZoom={DEFAULT_ZOOM}
                 />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
