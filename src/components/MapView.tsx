@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { divIcon, Icon, type Marker as LeafletMarker } from 'leaflet'
+import {
+    divIcon,
+    Icon,
+    latLngBounds,
+    type Marker as LeafletMarker,
+} from 'leaflet'
 import {
     MapContainer,
     Marker,
@@ -32,28 +37,62 @@ const selectedMarkerIcon = divIcon({
 const GERMANY_CENTER: [number, number] = [51.1657, 10.4515]
 const DEFAULT_ZOOM = 6
 
-const RecenterMap = ({ center }: { center: [number, number] }) => {
+const MapController = ({
+    selectedStation,
+    filteredStations,
+    allStations,
+}: {
+    selectedStation: Station | null
+    filteredStations: Station[]
+    allStations: Station[]
+}) => {
     const map = useMap()
+    const debounceRef = useRef<number | null>(null)
 
     useEffect(() => {
-        map.setView(center)
-    }, [map, center])
-
-    return null
-}
-
-const FlyToSelected = ({ station }: { station: Station | null }) => {
-    const map = useMap()
-
-    useEffect(() => {
-        if (!station) {
-            return
+        if (debounceRef.current) {
+            window.clearTimeout(debounceRef.current)
         }
 
-        map.flyTo([station.lat, station.lng], Math.max(map.getZoom(), 9), {
-            duration: 0.75,
-        })
-    }, [station, map])
+        debounceRef.current = window.setTimeout(() => {
+            if (selectedStation) {
+                map.flyTo(
+                    [selectedStation.lat, selectedStation.lng],
+                    Math.max(map.getZoom(), 9),
+                    { duration: 0.75 },
+                )
+                return
+            }
+
+            const activeStations =
+                filteredStations.length > 0 ? filteredStations : allStations
+
+            if (activeStations.length === 0) {
+                map.setView(GERMANY_CENTER, DEFAULT_ZOOM)
+                return
+            }
+
+            if (activeStations.length === 1) {
+                const [only] = activeStations
+                map.setView([only.lat, only.lng], Math.max(map.getZoom(), 9))
+                return
+            }
+
+            const bounds = latLngBounds(
+                activeStations.map((station) => [station.lat, station.lng]),
+            )
+            map.fitBounds(bounds, {
+                padding: [40, 40],
+                maxZoom: 8,
+            })
+        }, 150)
+
+        return () => {
+            if (debounceRef.current) {
+                window.clearTimeout(debounceRef.current)
+            }
+        }
+    }, [allStations, filteredStations, map, selectedStation])
 
     return null
 }
@@ -101,7 +140,7 @@ const MapView = () => {
         filteredStations,
         loading,
         error,
-        cityFilter,
+        stations,
         selectedStationId,
         selectedStation,
         setSelectedStation,
@@ -112,12 +151,16 @@ const MapView = () => {
             return [selectedStation.lat, selectedStation.lng]
         }
 
-        if (cityFilter && filteredStations.length > 0) {
+        if (filteredStations.length > 0) {
             return [filteredStations[0].lat, filteredStations[0].lng]
         }
 
+        if (stations.length > 0) {
+            return [stations[0].lat, stations[0].lng]
+        }
+
         return GERMANY_CENTER
-    }, [cityFilter, filteredStations, selectedStation])
+    }, [filteredStations, selectedStation, stations])
 
     const zoomLevel = DEFAULT_ZOOM
     const showEmptyState = !loading && !error && filteredStations.length === 0
@@ -147,8 +190,11 @@ const MapView = () => {
                 zoom={zoomLevel}
                 scrollWheelZoom
             >
-                <RecenterMap center={mapCenter} />
-                <FlyToSelected station={selectedStation} />
+                <MapController
+                    selectedStation={selectedStation}
+                    filteredStations={filteredStations}
+                    allStations={stations}
+                />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
