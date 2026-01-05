@@ -1,73 +1,35 @@
-# React + TypeScript + Vite
+# Train Map
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This app visualizes German train stations on a Leaflet map, with a city filter that keeps the list and map markers in sync. It uses React + TypeScript, Tailwind CSS, and a small context layer to keep state cohesive.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Run these from `my-app/`:
 
-## React Compiler
+- `npm install`
+- `npm run dev` for the local dev server
+- `npm test` for unit and integration tests
+- `npm run lint` for ESLint
+- `npm run build` for a production build
+- `npm run preview` to serve the production build locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Project Structure
 
-## Expanding the ESLint configuration
+- `src/components/` UI components such as `CityFilter`, `StationList`, and `MapView`
+- `src/context/` data and UI state in `StationsProvider`
+- `src/api/` data fetching in `stations.ts`
+- `src/types/` shared TypeScript types
+- `src/tests/` unit and integration tests
+- `docs/components.md` component responsibilities and relationships
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Data Source
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Stations are fetched from the GitHub Gist endpoint defined in `src/api/stations.ts`. The response is validated before being stored in state.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Decisions and Tradeoffs
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Context-based state keeps dependencies light and is enough for this scope. A dedicated state library is not used.
+- City filtering is exact-match based on the dataset. It keeps the UI predictable, but does not support fuzzy search.
+- The map centers on Germany by default. When a city is filtered or a station is selected, the view recenters to keep the UX focused.
+- Tests use Vitest and Testing Library. Coverage targets key interactions, not full end-to-end flows.
+- Styling relies on Tailwind v4 with a small custom CSS block for the selected marker animation.
