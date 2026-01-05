@@ -8,6 +8,7 @@ import {
     useState,
 } from 'react'
 import { fetchStations } from '../api/stations'
+import { filterStationsByCity, getCityList } from '../services/stations'
 import type { Station } from '../types/station'
 
 type StationsContextValue = {
@@ -100,13 +101,10 @@ export const StationsProvider = ({ children }: { children: ReactNode }) => {
         return () => controller.abort()
     }, [loadStations])
 
-    const filteredStations = useMemo(() => {
-        if (!cityFilter) {
-            return stations
-        }
-
-        return stations.filter((station) => station.city === cityFilter)
-    }, [stations, cityFilter])
+    const filteredStations = useMemo(
+        () => filterStationsByCity(stations, cityFilter),
+        [stations, cityFilter],
+    )
 
     const selectedStation = useMemo(() => {
         if (!selectedStationId) {
@@ -118,12 +116,7 @@ export const StationsProvider = ({ children }: { children: ReactNode }) => {
         )
     }, [selectedStationId, stations])
 
-    const cities = useMemo(() => {
-        const uniqueCities = new Set(stations.map((station) => station.city))
-        return Array.from(uniqueCities).sort((a, b) =>
-            a.localeCompare(b, undefined, { sensitivity: 'base' }),
-        )
-    }, [stations])
+    const cities = useMemo(() => getCityList(stations), [stations])
 
     useEffect(() => {
         if (
