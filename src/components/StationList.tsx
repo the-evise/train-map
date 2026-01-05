@@ -30,8 +30,7 @@ const StationList = () => {
     if (filteredStations.length === 0) {
         return (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-slate-300">
-                No stations match this city. Clear the filter to see all
-                stations again.
+                {`No stations${cityFilter ? ' match this city.' : ' available.'}`} {cityFilter ? 'Clear the filter to see all stations again.' : ''}
             </div>
         )
     }
