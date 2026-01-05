@@ -19,8 +19,18 @@ This document describes the main UI components and how data flows between them.
 
 ## MapView
 
-- Concern: Render the Leaflet map, station markers, and selection focus.
-- Relations: Uses `useStations()` to read `filteredStations`, `selectedStation`, and `cityFilter`. It centers on Germany by default, recenters for filtered cities, and flies to a selected station. Marker selection is reflected in the list.
+- Concern: Render the Leaflet map shell, tile layer, and markers.
+- Relations: Uses `useStations()` to read `filteredStations` and selection state, and composes `MapController` and `StationMarker` to handle map movement and selection.
+
+## MapController
+
+- Concern: Imperative map behavior (fly to selection, fit bounds on filter changes, and default centering).
+- Relations: Receives stations and selection from `MapView`, uses Leaflet map methods to update the view with a small debounce.
+
+## StationMarker
+
+- Concern: Leaflet marker rendering and selection styling.
+- Relations: Receives a `Station` plus selection state from `MapView`; opens the popup on selection and notifies selection on click.
 
 ## LoadingState
 

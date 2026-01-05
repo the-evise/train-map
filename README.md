@@ -1,4 +1,4 @@
-# Train Map
+# Train Map - PANTOhealth Frontend Assignment
 
 This app visualizes German train stations on a Leaflet map, with a city filter that keeps the list and map markers in sync. It uses React + TypeScript, Tailwind CSS, and a small context layer to keep state cohesive.
 
@@ -16,6 +16,7 @@ Run these from `my-app/`:
 ## Project Structure
 
 - `src/components/` UI components such as `CityFilter`, `StationList`, and `MapView`
+- `src/components/map/` map-specific components (`MapController`, `StationMarker`)
 - `src/context/` data and UI state in `StationsProvider`
 - `src/api/` data fetching in `stations.ts`
 - `src/types/` shared TypeScript types
@@ -30,6 +31,7 @@ Stations are fetched from the GitHub Gist endpoint defined in `src/api/stations.
 
 - Context-based state keeps dependencies light and is enough for this scope. A dedicated state library is not used.
 - City filtering is exact-match based on the dataset. It keeps the UI predictable, but does not support fuzzy search.
-- The map centers on Germany by default. When a city is filtered or a station is selected, the view recenters to keep the UX focused.
-- Tests use Vitest and Testing Library. Coverage targets key interactions, not full end-to-end flows.
+- The map centers on Germany by default. `MapController` uses debounced updates to fly to a selected station and fit bounds for filtered results.
+- Station selection is managed in context so list clicks and marker clicks stay in sync.
+- Tests use Vitest and Testing Library; coverage targets key interactions and a small integration flow, not full end-to-end runs.
 - Styling relies on Tailwind v4 with a small custom CSS block for the selected marker animation.
